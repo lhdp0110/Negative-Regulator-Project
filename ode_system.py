@@ -14,8 +14,7 @@ from scipy.integrate import solve_ivp
 ### List of all the ODE system parameters:
 
 # degradation/inactivation rates
-d_A = 0.5      # 0.02 (delta_A) per Ellner Fig.3,4 /// 0.05 per Table S3
-# can only fit if 0.5
+d_A = 0.5      # 0.02 (delta_A) per Ellner Fig.3,4 /// 0.05 per Table S3 // # can only fit if 0.5
 d_G = 0.02       # 0.02 (delta_P) per Ellner Fig.4
 d_P = 0.01       # 0.01 (delta_P) per Ellner Table S3
 d_bP = 0.02      # 0.02 (delta_P*) per Ellner Table S3

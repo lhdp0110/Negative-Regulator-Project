@@ -102,6 +102,23 @@ print(fit_result)
 taxis = np.linspace(0, 50)
 A_fit, G_fit, NG1_fit, NG2_fit, P_fit, RB_fit,  RN_fit, RP_fit, bI_fit, bP_fit, bRN_fit,  = model(t=taxis, **fit_result.params)
 
+
+
+   
+magnitude_init = A_fit[0]
+magnitude_max = max(A_fit)
+
+for count in range(50):
+    if A_fit[count] == magnitude_max:
+        time_max = count
+
+magnitude_decay = A_fit[time_max*2]        
+        
+rate_induct = (magnitude_max - magnitude_init) / (time_max)
+rate_decay = (magnitude_decay - magnitude_max) / (time_max)
+
+
+
 plt.scatter(tdata, concentration)
 plt.plot(taxis, A_fit, label='[A]')
 plt.plot(taxis, G_fit, label='[G]')
@@ -113,6 +130,11 @@ plt.plot(taxis, RP_fit, label='[RP]')
 plt.plot(taxis, RN_fit, label='[RN]')
 plt.plot(taxis, bRN_fit, label='[bRN]')
 plt.plot(taxis, NG1_fit, label='[NG1]')
+
+#plt.plot([0, magnitude_init], [time_max, magnitude_max], color = 'green', linestyle = '-')
+#plt.annotate("Initial value = " + str(magnitude_init), (0, A_fit[0]))
+#plt.annotate("Max value = " + str(magnitude_max), (time_max, magnitude_max))
+
 #plt.plot(taxis, NG2_fit, label='[NG2]')
 plt.xlabel('Hours post infection')
 plt.ylabel('[X]')
