@@ -77,6 +77,15 @@ def f(t, y, d_A, d_N, c_A, c_N, c_bN):
     bRN = y[8]
     NG1 = y[9]
     NG2 = y[10]
+    val_base = y[11]
+    val_max = y[12]
+    rate_induc = y[13]
+    rate_decay = y[14]
+    
+    val_base = A[0]
+    val_max = max(A)
+    rate_induc = (A[6]-A[0])/6
+    rate_decay = (A[12]-A[6]/6)
     
     dA_dt = s_A + c_A * bRN - d_A * A                       # AMPs transcribed by Relish
     dG_dt = p_G * G - m_G * G * A - d_G * G                 # pathogen present outside the cell
@@ -95,7 +104,7 @@ def f(t, y, d_A, d_N, c_A, c_N, c_bN):
     dNG1_dt = s_NG1 + c_NG1 * bRN - d_NG1 * NG1             # neg reg at level 1 (PGRP-SC2/LB, pathogen binding)
     dNG2_dt = s_NG2 + c_NG2 * bRN - d_NG2 *NG2              # neg reg at level 2 (PIRK, IMD recruitment)
 
-    return np.array([dA_dt, dG_dt, dP_dt, dbP_dt, dbI_dt, dRB_dt, dRP_dt, dRN_dt, dbRN_dt, dNG1_dt, dNG2_dt])
+    return np.array([dA_dt, dG_dt, dP_dt, dbP_dt, dbI_dt, dRB_dt, dRP_dt, dRN_dt, dbRN_dt, dNG1_dt, dNG2_dt, val_base, val_max, rate_induc, rate_decay])
 
 t_span = np.array([0, 50])
 times = np.linspace(t_span[0], t_span[1], 101)

@@ -226,6 +226,17 @@ plt.ylim(-1,11)
 plt.legend()
 plt.show()
 
+cac_kd_c_A = kd_fit_result.value(c_A)
+cac_ctrl_c_A = ctrl_fit_result.value(c_A)
+cac_kd_c_N = kd_fit_result.value(c_N)
+cac_ctrl_c_N = ctrl_fit_result.value(c_N)
+cac_kd_c_bN = kd_fit_result.value(c_bN)
+cac_ctrl_c_bN = ctrl_fit_result.value(c_bN)
+cac_kd_d_A = kd_fit_result.value(d_A)
+cac_ctrl_d_A = ctrl_fit_result.value(d_A)
+cac_kd_d_N = kd_fit_result.value(d_N)
+cac_ctrl_d_N = ctrl_fit_result.value(d_N)
+
 #%%
 ###############################################################################
 # Cecropin-2 data fitting #####################################################
@@ -356,6 +367,17 @@ plt.ylim(-1,11)
 plt.legend()
 plt.show()
 
+cec2_kd_c_A = kd_fit_result.value(c_A)
+cec2_ctrl_c_A = ctrl_fit_result.value(c_A)
+cec2_kd_c_N = kd_fit_result.value(c_N)
+cec2_ctrl_c_N = ctrl_fit_result.value(c_N)
+cec2_kd_c_bN = kd_fit_result.value(c_bN)
+cec2_ctrl_c_bN = ctrl_fit_result.value(c_bN)
+cec2_kd_d_A = kd_fit_result.value(d_A)
+cec2_ctrl_d_A = ctrl_fit_result.value(d_A)
+cec2_kd_d_N = kd_fit_result.value(d_N)
+cec2_ctrl_d_N = ctrl_fit_result.value(d_N)
+
 #%%
 ###############################################################################
 # Defensin-2 data fitting #####################################################
@@ -485,6 +507,17 @@ plt.yticks([0,2,4,6,8,10])
 plt.ylim(-1,11)
 plt.legend()
 plt.show()
+
+def2_kd_c_A = kd_fit_result.value(c_A)
+def2_ctrl_c_A = ctrl_fit_result.value(c_A)
+def2_kd_c_N = kd_fit_result.value(c_N)
+def2_ctrl_c_N = ctrl_fit_result.value(c_N)
+def2_kd_c_bN = kd_fit_result.value(c_bN)
+def2_ctrl_c_bN = ctrl_fit_result.value(c_bN)
+def2_kd_d_A = kd_fit_result.value(d_A)
+def2_ctrl_d_A = ctrl_fit_result.value(d_A)
+def2_kd_d_N = kd_fit_result.value(d_N)
+def2_ctrl_d_N = ctrl_fit_result.value(d_N)
 
 #%%
 ###############################################################################
@@ -626,12 +659,4 @@ def3_kd_d_A = kd_fit_result.value(d_A)
 def3_ctrl_d_A = ctrl_fit_result.value(d_A)
 def3_kd_d_N = kd_fit_result.value(d_N)
 def3_ctrl_d_N = ctrl_fit_result.value(d_N)
-
-#%%
-###############################################################################
-# Graphical sensitivity analysis ##############################################
-###############################################################################
-
-
-
 

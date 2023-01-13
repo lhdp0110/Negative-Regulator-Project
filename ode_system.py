@@ -25,7 +25,6 @@ d_bN = 0.1
 d_NG1 = 0.05    # 0.05 (delta_H) per Ellner Table S3
 d_NG2 = 0.05     # 0.05 (delta_H) per Ellner Table S3
 
-
 # supply rates
 s_A = d_A       # (Q_A = delta_A) per Ellner p.15
 s_P = d_P       # (Q_P = delta_P) per Ellner p.15
@@ -57,7 +56,7 @@ phi_NG1 = 0.07
 phi_NG2 = 0.32
 
 # proliferation rate
-p_G = 2.5       # (new default = 2.8) 2.5, per Frank. alters G more than A
+p_G = 2.4       # (new default = 2.8) 2.5, per Frank. alters G more than A
 
 # mortality rate
 m_G = 2            # (default = 2) max=5, per Frank. alters G more than A
