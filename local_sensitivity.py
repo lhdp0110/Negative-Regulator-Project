@@ -676,10 +676,167 @@ plt.show()
 
 #%%
 ###############################################################################
+# Graphical sensitivity analysis of s_A #######################################
+###############################################################################
+
+test_values = [0.4, 1, 3]
+A = []
+A = [0 for i in range(len(test_values))]
+label = []
+label = ['' for i in range(len(test_values))]
+i = 0
+for s_A in test_values: 
+    # Solving ODE initial value problem for each parameter value
+    soln = solve_ivp(f, t_span, y0, t_eval=times)
+    t = soln.t
+    A[i] = soln.y[0]
+    label[i] = str(test_values[i])
+    G = soln.y[1]
+    P = soln.y[2]
+    bP = soln.y[3]
+    bI = soln.y[4]
+    RB = soln.y[5]
+    RP = soln.y[6]
+    RN = soln.y[7]
+    bRN = soln.y[8]
+    NG1 = soln.y[9]
+    NG2 = soln.y[10]
+    plt.plot(t, A[i], '-', label='s_A = '+label[i])
+    rate_induc = (soln.y[0][12] - soln.y[0][0])/6
+    rate_decay = (soln.y[0][48] - soln.y[0][12])/6
+    exp_min = min(soln.y[0])
+    exp_max = max(soln.y[0])
+    print('For s_A = ' + label[i] +':')
+    print('  Induction rate = ' + str(rate_induc))
+    print('  Decay rate     = ' + str(rate_decay))
+    print('  Minimum value  = ' + str(exp_min))
+    print('  Maximum value  = ' + str(exp_max))
+    print('')
+    i += 1
+s_A = 0.5                          # reset c_A to original value    
+
+# Plotting the solution for all values on same graph
+plt.xlabel('Hours post infection')
+plt.ylabel('AMP expression')
+plt.xticks([0,6,12,18,24,30,36,42,48])
+plt.xlim(0, 50)
+plt.yticks([0,1,2,3])
+plt.ylim(0, 3)
+plt.legend()
+plt.show()
+
+
+#%%
+###############################################################################
+# Graphical sensitivity analysis of s_P #######################################
+###############################################################################
+
+test_values = [0.001, 1, 10]
+A = []
+A = [0 for i in range(len(test_values))]
+label = []
+label = ['' for i in range(len(test_values))]
+i = 0
+for s_P in test_values: 
+    # Solving ODE initial value problem for each parameter value
+    soln = solve_ivp(f, t_span, y0, t_eval=times)
+    t = soln.t
+    A[i] = soln.y[0]
+    label[i] = str(test_values[i])
+    G = soln.y[1]
+    P = soln.y[2]
+    bP = soln.y[3]
+    bI = soln.y[4]
+    RB = soln.y[5]
+    RP = soln.y[6]
+    RN = soln.y[7]
+    bRN = soln.y[8]
+    NG1 = soln.y[9]
+    NG2 = soln.y[10]
+    plt.plot(t, A[i], '-', label='s_P = '+label[i])
+    rate_induc = (soln.y[0][12] - soln.y[0][0])/6
+    rate_decay = (soln.y[0][48] - soln.y[0][12])/6
+    exp_min = min(soln.y[0])
+    exp_max = max(soln.y[0])
+    print('For s_P = ' + label[i] +':')
+    print('  Induction rate = ' + str(rate_induc))
+    print('  Decay rate     = ' + str(rate_decay))
+    print('  Minimum value  = ' + str(exp_min))
+    print('  Maximum value  = ' + str(exp_max))
+    print('')
+    i += 1
+s_P = 0.01                          # reset c_A to original value    
+
+# Plotting the solution for all values on same graph
+plt.xlabel('Hours post infection')
+plt.ylabel('AMP expression')
+plt.xticks([0,6,12,18,24,30,36,42,48])
+plt.xlim(0, 50)
+plt.yticks([0,1,2,3])
+plt.ylim(0, 3)
+plt.legend()
+plt.show()
+
+
+#%%
+###############################################################################
+# Graphical sensitivity analysis of s_B #######################################
+###############################################################################
+
+test_values = [0.0001, 0.1]
+A = []
+A = [0 for i in range(len(test_values))]
+label = []
+label = ['' for i in range(len(test_values))]
+i = 0
+for s_B in test_values: 
+    # Solving ODE initial value problem for each parameter value
+    soln = solve_ivp(f, t_span, y0, t_eval=times)
+    t = soln.t
+    A[i] = soln.y[0]
+    label[i] = str(test_values[i])
+    G = soln.y[1]
+    P = soln.y[2]
+    bP = soln.y[3]
+    bI = soln.y[4]
+    RB = soln.y[5]
+    RP = soln.y[6]
+    RN = soln.y[7]
+    bRN = soln.y[8]
+    NG1 = soln.y[9]
+    NG2 = soln.y[10]
+    plt.plot(t, A[i], '-', label='s_B = '+label[i])
+    rate_induc = (soln.y[0][12] - soln.y[0][0])/6
+    rate_decay = (soln.y[0][48] - soln.y[0][12])/6
+    exp_min = min(soln.y[0])
+    exp_max = max(soln.y[0])
+    print('For s_B = ' + label[i] +':')
+    print('  Induction rate = ' + str(rate_induc))
+    print('  Decay rate     = ' + str(rate_decay))
+    print('  Minimum value  = ' + str(exp_min))
+    print('  Maximum value  = ' + str(exp_max))
+    print('')
+    i += 1
+s_B = 0.01                          # reset c_A to original value    
+
+# Plotting the solution for all values on same graph
+plt.xlabel('Hours post infection')
+plt.ylabel('AMP expression')
+plt.xticks([0,6,12,18,24,30,36,42,48])
+plt.xlim(0, 50)
+plt.yticks([0,1,2,3])
+plt.ylim(0, 3)
+plt.legend()
+plt.show()
+
+
+
+#%%
+###############################################################################
 # Graphical sensitivity analysis of c_A #######################################
 ###############################################################################
 
-test_values = [0.5, 1, 2]
+test_values = [0.5, 1, 20]
 A = []
 A = [0 for i in range(len(test_values))]
 label = []
