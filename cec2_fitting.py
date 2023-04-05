@@ -233,7 +233,7 @@ t, A, G, P, bP, bI, RB, RP, RN, bRN, NG1, NG2 = variables('t, A, G, P, bP, bI, R
 #d_P = Parameter('d_P', 0.01, 0.001, 100)
 #d_bP = Parameter('d_bP', 0.02, 0.001, 100)
 #d_bI = Parameter('d_bI', 0.01, 0.01, 100)
-#d_R = Parameter('d_R', 0.01, 0.001, 1)
+d_R = Parameter('d_R', 0.01, 0.001, 1)
 #d_N = Parameter('d_N', 0.15, 0.01, 2)
 #d_NG1 = Parameter('d_NG1', 0.05, 0.001, 100)
 #d_NG2 = Parameter('d_NG2', 0.05, 0.001, 100)
@@ -251,6 +251,8 @@ c_A = Parameter('c_A', 13.1, 0.1, 20)
 #c_bN = Parameter('c_bN', 1, 0.1, 10)
 #c_NG1 = Parameter('c_NG1', 0.1, 0.01, 100)
 #c_NG2 = Parameter('c_NG2', 0.2, 0.01, 100)
+
+f_P = Parameter('f_P', 10, 0.01, 50)
 
 model_dict = {
     D(A, t): s_A + c_A * bRN - d_A * A,
