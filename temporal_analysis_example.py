@@ -5,7 +5,7 @@ Created on Fri Mar 10 13:06:41 2023
 
 @author: perrielh
 
-taken from: https://salib.readthedocs.io/en/latest/basics.html#run-model
+taken from: https://salib.readthedocs.io/en/latest/user_guide/basics.html
 """
 
 import numpy as np

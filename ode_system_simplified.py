@@ -1,10 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Nov 17 15:32:22 2022
+Created on Fri Jun  2 14:35:16 2023
 
 @author: perrielh
+
+This is a copy of ode_system with some modifications:
+   equations for NG1 and NG2 are deleted
+   negative feedback effect will be accounted for only by modification of associated parameters
+   
+   
+Training data (all malE control) from dnr_training set:
+    
+time (hrs): 0, 2, 4, 8, 12, 24, 48
+    
+cec2 setA: 3.69, 3.28, 4.25, 4.91, 4.61, 2.03, 2.78
+cec2 setB: 2.82, 4.11, 4.55, 6.00, 5.11, 4.12, 4.35
+
+def2 setA: 1.58, 5.93, 6.05, 6.34, 6.41, 4.91, 3.99
+def2 setB: 0.22, 5.72, 8.33, 6.61, 6.06, 3.29, 2.41
+
+def3 setA: 3.00, 4.77, 3.13, 5.07, 3.51, 1.49, 2.15
+def3 setB: 2.10, 3.87, 4.22, 5.40, 3.55, 1.60, 2.17
 """
+
 
 import numpy as np
 from numpy import exp
@@ -22,15 +41,11 @@ d_bI = 0.01      # 0.01 (rho_I*) per Ellner Table S3
 d_R = 0.01       # 0.01 (delta_R) per Ellner Table S3
 d_N = 0.1       # 0.01 (delta_N) per Ellner Table S3
 d_bN = 0.1
-d_NG1 = 0.05    # 0.05 (delta_H) per Ellner Table S3
-d_NG2 = 0.05     # 0.05 (delta_H) per Ellner Table S3
 
 # supply rates
 s_A = d_A       # (Q_A = delta_A) per Ellner p.15
 s_P = d_P       # (Q_P = delta_P) per Ellner p.15
 s_B = d_R       # (Q_R = delta_R) per Ellner p.15
-s_NG1 = d_NG1     # (Q_H = delta_H) per Ellner p.15
-s_NG2 = d_NG1    # (Q_H = delta_H) per Ellner p.15
 
 # setting all supply and degradation rates to the same value 
 # eliminates irrelevant variations and allows values to return to baseline
@@ -42,18 +57,12 @@ c_I = 1       # (default = 0.5)
 c_B = 4        # (default = 4) can be higher than 4 but not lower than 2
 c_N = 3     # (default = 3) decreasing to 1 lowers peak of A and induces small lift around t=48, increasing beyond 3 doesn't change much
 c_bN = 2.5      # (default = 0.5) variations alter shape and peak of A, but not by much
-c_NG1 = 0.1
-c_NG2 = 0.2
 
 # carrying capacity
 K_I = 1
 
 # flow rate into nucleus
 f_P =  9       # (default = 10) increasing to 20 or higher doesn't change much, decreasing to 1 flattens A and incudes small lift at t=48
-
-# strength of feedback effect
-phi_NG1 = 0.07
-phi_NG2 = 0.32
 
 # proliferation rate
 p_G = 2.4       # (new default = 2.8) 2.5, per Frank. alters G more than A
@@ -87,33 +96,28 @@ def f(t, y):
     RP = y[6]
     RN = y[7]
     bRN = y[8]
-    NG1 = y[9]
-    NG2 = y[10]
     
     dA_dt = s_A + c_A * bRN - d_A * A                       # AMPs transcribed by Relish
     dG_dt = p_G * G - m_G * G * A - d_G * G                 # pathogen present outside the cell
     
-    dP_dt = s_P - 2 * c_P * P**2 * G * exp(-phi_NG1 * NG1) - d_P * P              # unbound PGRP-LC monomer
-    dbP_dt = c_P * P**2 * G * exp(-phi_NG1 * NG1) - d_bP * bP                     # PGRP-LC dimer bound to pathogen
+    dP_dt = s_P - 2 * c_P * P**2 * G  - d_P * P              # unbound PGRP-LC monomer
+    dbP_dt = c_P * P**2 * G  - d_bP * bP                     # PGRP-LC dimer bound to pathogen
    
-    dbI_dt = c_I * (1-bI/K_I) * bP * exp(-phi_NG2 * NG2) - d_bI * bI                  # IMD recruited by activated PGRP-LC
+    dbI_dt = c_I * (1-bI/K_I) * bP - d_bI * bI                  # IMD recruited by activated PGRP-LC
    
     dRB_dt = s_B - c_B * RB * bI - d_R * RB                 # Relish B in cytoplasm
     dRP_dt = c_B * RB * bI - f_P * RP - d_R * RP            # Relish P in cytoplasm
    
     dRN_dt = f_P * RP - c_N * RN + c_bN * bRN - d_N * RN    # free nuclear Relish
     dbRN_dt = c_N * RN - c_bN * bRN - d_bN * bRN           # nuclear Relish bound to target gene
-   
-    dNG1_dt = s_NG1 + c_NG1 * bRN - d_NG1 * NG1             # neg reg at level 1 (PGRP-SC2/LB, pathogen binding)
-    dNG2_dt = s_NG2 + c_NG2 * bRN - d_NG2 *NG2              # neg reg at level 2 (PIRK, IMD recruitment)
     
-    return np.array([dA_dt, dG_dt, dP_dt, dbP_dt, dbI_dt, dRB_dt, dRP_dt, dRN_dt, dbRN_dt, dNG1_dt, dNG2_dt])
+    return np.array([dA_dt, dG_dt, dP_dt, dbP_dt, dbI_dt, dRB_dt, dRP_dt, dRN_dt, dbRN_dt])
 
 t_span = np.array([0, 50])
 times = np.linspace(t_span[0], t_span[1], 101)
 
 # Initial conditions of ODE system
-y0 = np.array([1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1])
+y0 = np.array([1, 1, 1, 0, 0, 1, 0, 0, 0])
 
 # Solving ODE initial value problem
 soln = solve_ivp(f, t_span, y0, t_eval=times)
@@ -127,8 +131,6 @@ RB = soln.y[5]
 RP = soln.y[6]
 RN = soln.y[7]
 bRN = soln.y[8]
-NG1 = soln.y[9]
-NG2 = soln.y[10]
 
 
 # Plotting the solution
@@ -143,8 +145,6 @@ plt.plot(t, RB, '-', label='RB')
 plt.plot(t, RP, '-', label='RP')
 plt.plot(t, RN, '-', label='RN')
 plt.plot(t, bRN, '-', label='bRN')
-plt.plot(t, NG1, '-', label='NG1')
-#plt.plot(t, NG2, '-', label='NG2')
 plt.xlabel("time")
 plt.ylabel("concentration")
 plt.xlim(0,50)
@@ -175,3 +175,65 @@ plt.legend(loc='upper right')
 plt.show()
 
 
+#%%
+
+from symfit import variables, Parameter, Fit, D, ODEModel, exp
+import numpy as np
+import matplotlib.pyplot as plt
+
+tdata = np.array([0, 2, 4, 8, 12, 24, 48])
+concentration = np.array([2.5, 4.3, 3.7, 5.2, 3.5, 1.5, 2.1])
+
+# Define our ODE model
+t, A, G, P, bP, bI, RB, RP, RN, bRN = variables('t, A, G, P, bP, bI, RB, RP, RN, bRN')
+
+d_A = Parameter('d_A', 0.5, min=0)
+d_N = Parameter('d_N', 0.15, min=0)
+c_A = Parameter('c_A', 0.8, min=0)
+c_N = Parameter('c_N', 3, min=0)
+c_bN = Parameter('c_bN', 1, min=0)
+
+model = ODEModel({
+    D(A, t): s_A + c_A * bRN - d_A * A,
+    D(G, t): p_G * G - m_G * G * A - d_G * G,
+    
+    D(P, t): s_P - 2 * c_P * P**2 * G  - d_P * P,
+    D(bP, t): c_P * P**2 * G  - d_bP * bP,
+   
+    D(bI, t): c_I * (1-bI/K_I) * bP  - d_bI * bI,
+   
+    D(RB, t): s_B - c_B * RB * bI - d_R * RB,
+    D(RP, t): c_B * RB * bI - f_P * RP - d_R * RP,
+   
+    D(RN, t): f_P * RP - c_N * RN + c_bN * bRN - d_N * RN,
+    D(bRN, t): c_N * RN - c_bN * bRN,
+
+    },
+    initial={t: tdata[0], A: concentration[0], G: 1, P: 1, bP: 0, bI: 0, RB: 1, RP: 0, RN: 0, bRN: 0}
+)
+
+fit = Fit(model, t=tdata, A=concentration, G=None, P=None, bP=None, bI=None, RB=None, RP=None, RN=None,
+          bRN=None)
+fit_result = fit.execute()
+
+print(fit_result)
+
+taxis = np.linspace(0, 50)
+A_fit, G_fit, P_fit, RB_fit,  RN_fit, RP_fit, bI_fit, bP_fit, bRN_fit,  = model(t=taxis, **fit_result.params)
+
+plt.scatter(tdata, concentration)
+plt.plot(taxis, A_fit, label='[A]')
+#plt.plot(taxis, G_fit, label='[G]')
+#plt.plot(taxis, P_fit, label='[P]')
+#plt.plot(taxis, bP_fit, label='[bP]')
+#plt.plot(taxis, bI_fit, label='[bI]')
+#plt.plot(taxis, RB_fit, label='[RB]')
+#plt.plot(taxis, RP_fit, label='[RP]')
+#plt.plot(taxis, RN_fit, label='[RN]')
+#plt.plot(taxis, bRN_fit, label='[bRN]')
+#plt.xlabel('Hours post infection')
+#plt.ylabel('[X]')
+#plt.ylim(0, 3)
+plt.xlim(0, 50)
+plt.legend()
+plt.show()
