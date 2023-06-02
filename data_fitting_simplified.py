@@ -109,16 +109,12 @@ d_bP = 0.02                     # 0.02 (delta_P*) per Ellner Table S3
 d_bI = 0.01                          # 0.01 (rho_I*) per Ellner Table S3
 d_R = 0.01                       # 0.01 (delta_R) per Ellner Table S3
 #d_N = 0.15 #*******             # 0.01 (delta_N) per Ellner Table S3
-d_NG1 = 0.05                    # 0.05 (delta_H) per Ellner Table S3
-d_NG2 = 0.05                      # 0.05 (delta_H) per Ellner Table S3
 
 
 # supply rates
 s_A = 0.5                       # (Q_A = delta_A) per Ellner p.15
 s_P = d_P                       # (Q_P = delta_P) per Ellner p.15
 s_B = d_R                         # (Q_R = delta_R) per Ellner p.15
-s_NG1 = d_NG1                   # (Q_H = delta_H) per Ellner p.15
-s_NG2 = d_NG1                     # (Q_H = delta_H) per Ellner p.15
     
 # setting all supply and degradation rates to the same value 
 # eliminates irrelevant variations and allows values to return to baseline
@@ -130,8 +126,7 @@ c_I = 0.5                # (default = 0.5)
 c_B = 4                 # (default = 4) can be higher than 4 but not lower than 2
 #c_N = 3  #*****          # (default = 3) decreasing to 1 lowers peak of A and induces small lift around t=48, increasing beyond 3 doesn't change much
 #c_bN = 1  #******      # (default = 0.5) variations alter shape and peak of A, but not by much
-c_NG1 = 0.1
-c_NG2 = 0.2
+
 
 # carrying capacity
 K_I = 1
@@ -139,9 +134,6 @@ K_I = 1
 # flow rate into nucleus
 f_P =  10      # (default = 10) increasing to 20 or higher doesn't change much, decreasing to 1 flattens A and incudes small lift at t=48
 
-# strength of feedback effect
-phi_NG1 = 0.01
-phi_NG2 = 0.01
 
 # proliferation rate
 p_G = 1.9       # (new default = 2.8) 2.5, per Frank. alters G more than A
@@ -157,7 +149,7 @@ ctrl_concentration = cac_ctrl_concentration
 ctrl_std_dev = cac_ctrl_std_dev
 
 # Define our ODE model
-t, A, G, P, bP, bI, RB, RP, RN, bRN, NG1, NG2 = variables('t, A, G, P, bP, bI, RB, RP, RN, bRN, NG1, NG2')
+t, A, G, P, bP, bI, RB, RP, RN, bRN = variables('t, A, G, P, bP, bI, RB, RP, RN, bRN')
 
 d_A = Parameter('d_A', 0.5, min=0)
 d_N = Parameter('d_N', 0.15, min=0)
@@ -169,43 +161,40 @@ model_dict = {
     D(A, t): s_A + c_A * bRN - d_A * A,
     D(G, t): p_G * G - m_G * G * A - d_G * G,
     
-    D(P, t): s_P - 2 * c_P * P**2 * G * exp(-phi_NG1 * NG1) - d_P * P,
-    D(bP, t): c_P * P**2 * G * exp(-phi_NG1 * NG1) - d_bP * bP,
+    D(P, t): s_P - 2 * c_P * P**2 * G  - d_P * P,
+    D(bP, t): c_P * P**2 * G  - d_bP * bP,
    
-    D(bI, t): c_I * (1-bI/K_I) * bP * exp(-phi_NG2 * NG2) - d_bI * bI,
+    D(bI, t): c_I * (1-bI/K_I) * bP  - d_bI * bI,
    
     D(RB, t): s_B - c_B * RB * bI - d_R * RB,
     D(RP, t): c_B * RB * bI - f_P * RP - d_R * RP,
    
     D(RN, t): f_P * RP - c_N * RN + c_bN * bRN - d_N * RN,
-    D(bRN, t): c_N * RN - c_bN * bRN,
-   
-    D(NG1, t): s_NG1 + c_NG1 * bRN - d_NG1 * NG1,
-    D(NG2, t): s_NG2 + c_NG2 * bRN - d_NG2 * NG2
+    D(bRN, t): c_N * RN - c_bN * bRN
     }
 
-kd_model = ODEModel(model_dict, initial={t: tdata[0], A: kd_concentration[0], G: 1, P: 1, bP: 0, bI: 0, RB: 1, RP: 0, RN: 0, bRN: 0, NG1: 1, NG2: 1})
-ctrl_model = ODEModel(model_dict, initial={t: tdata[0], A: ctrl_concentration[0], G: 1, P: 1, bP: 0, bI: 0, RB: 1, RP: 0, RN: 0, bRN: 0, NG1: 1, NG2: 1})
+kd_model = ODEModel(model_dict, initial={t: tdata[0], A: kd_concentration[0], G: 1, P: 1, bP: 0, bI: 0, RB: 1, RP: 0, RN: 0, bRN: 0})
+ctrl_model = ODEModel(model_dict, initial={t: tdata[0], A: ctrl_concentration[0], G: 1, P: 1, bP: 0, bI: 0, RB: 1, RP: 0, RN: 0, bRN: 0})
 
 taxis = np.linspace(0, 50)
 
 kd_fit = Fit(kd_model, t=tdata, A=kd_concentration, G=None, P=None, bP=None, bI=None, RB=None, RP=None, RN=None,
-          bRN=None, NG1=None, NG2=None, sigma_A=kd_std_dev)
+          bRN=None, sigma_A=kd_std_dev)
 kd_fit_result = kd_fit.execute()
 
 print("\nResults for Cactus knockdown data:")
 print(kd_fit_result)
 
-A_kd_fit, G_kd_fit, NG1_kd_fit, NG2_kd_fit, P_kd_fit, RB_kd_fit,  RN_kd_fit, RP_kd_fit, bI_kd_fit, bP_kd_fit, bRN_kd_fit,  = kd_model(t=taxis, **kd_fit_result.params)
+A_kd_fit, G_kd_fit, P_kd_fit, RB_kd_fit,  RN_kd_fit, RP_kd_fit, bI_kd_fit, bP_kd_fit, bRN_kd_fit,  = kd_model(t=taxis, **kd_fit_result.params)
 
 ctrl_fit = Fit(ctrl_model, t=tdata, A=ctrl_concentration, G=None, P=None, bP=None, bI=None, RB=None, RP=None, RN=None,
-          bRN=None, NG1=None, NG2=None, sigma_A=ctrl_std_dev)
+          bRN=None, sigma_A=ctrl_std_dev)
 ctrl_fit_result = ctrl_fit.execute()
 
 print("\nResults for MalE control data:")
 print(ctrl_fit_result)
 
-A_ctrl_fit, G_ctrl_fit, NG1_ctrl_fit, NG2_ctrl_fit, P_ctrl_fit, RB_ctrl_fit,  RN_ctrl_fit, RP_ctrl_fit, bI_ctrl_fit, bP_ctrl_fit, bRN_ctrl_fit,  = ctrl_model(t=taxis, **ctrl_fit_result.params)
+A_ctrl_fit, G_ctrl_fit, P_ctrl_fit, RB_ctrl_fit,  RN_ctrl_fit, RP_ctrl_fit, bI_ctrl_fit, bP_ctrl_fit, bRN_ctrl_fit,  = ctrl_model(t=taxis, **ctrl_fit_result.params)
 
 plt.scatter(tdata, kd_concentration, label = 'KD data', color='tomato')
 plt.plot(taxis, A_kd_fit, label='KD fit', color='tomato')
