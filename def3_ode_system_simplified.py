@@ -8,18 +8,12 @@ Created on Fri Jun  2 14:35:16 2023
 This is a copy of ode_system with some modifications:
    equations for NG1 and NG2 are deleted
    negative feedback effect will be accounted for only by modification of associated parameters
-   
-   
-Training data (all malE control) from dnr_training set:
-    
-time (hrs): 0, 2, 4, 8, 12, 24, 48
 
-def3 setA: 5, 6.77, 5.13, 7.07, 5.51, 3.49, 4.15
 
 """
 
 ###############################################################################
-# Baseline Defensin-3 calibrated SIMPLIFIED model #############################
+# Baseline Defensin-3 SIMPLE calibrated model #################################
 ###############################################################################
 #
 # Training data (all malE KD control) from def3_alldata:
@@ -34,7 +28,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
-### List of all the ODE system parameters:
+### List of all ODE system parameters:
 
 init_vals = 5
 tot_I = init_vals
@@ -111,7 +105,6 @@ RP = soln.y[6]
 RN = soln.y[7]
 bRN = soln.y[8]
 
-
 # Plotting the solution
 plt.rc("font", size=12)
 plt.figure()
@@ -158,7 +151,7 @@ plt.show()
 
 #%%
 ###############################################################################
-# Defensin-3 training data calibration ########################################
+# Defensin-3 SIMPLE training data calibration #################################
 ###############################################################################
 #
 # Training data (all malE KD control) from def3_alldata:
@@ -254,7 +247,7 @@ plt.show()
 
 #%%
 ###############################################################################
-# Defensin-3 data fitting #####################################################
+# Defensin-3 SIMPLE data fitting ##############################################
 ###############################################################################
 #
 # DEF3 expression test data (cactus KD vs malE KD) from def3_alldata.xlsx
@@ -379,13 +372,203 @@ def3_ctrl_d_N = ctrl_fit_result.value(d_N)
 
 #%%
 
+###############################################################################
+# Defensin-3 SIMPLE sensitivity analysis ######################################
+###############################################################################
+#
+# https://stackoverflow.com/questions/58504174/how-can-i-perform-sensitivity-analysis-on-odes-with-salib
+# https://salib.readthedocs.io/en/latest/api/SALib.plotting.html#module-SALib.plotting.bar
+
+# importing packages
+from scipy import integrate as sp
+import numpy as np
+import SALib
+from SALib.sample import saltelli
+from SALib.analyze import sobol
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+
+### List of all ODE system parameters:
+
+init_vals = 5
+tot_I = init_vals
+
+d_A = 21.7   
+d_G = 0.0001
+d_P = 0.01  
+d_bP = 0.05    
+d_bI = 0.02   
+d_R = 0.02   
+d_N = 0.16  
+d_bN = 0.3
+
+s_A = 35.9    
+s_P = 0.065    
+s_B = 0.21      
+
+c_A = 67.6   #adjusts how high A peaks
+c_P = 0.5 
+c_I = 0.5  
+c_B = 1    
+c_N = 0.845
+c_bN = 1.46
+
+f_P = 14  
+p_G = 1.59
+m_G = 1   
+
+K_I = 1
+
+def f(y,t,d_A,s_A,c_A,c_N,c_bN,f_P):
+    A,G,P,bP,bI,RB,RP,RN,bRN=y
+  
+    dA = s_A + c_A * bRN - d_A * A                       # AMPs transcribed by Relish
+    dG = p_G * G - m_G * G * A - d_G * G                 # pathogen present outside the cell
+    
+    dP = s_P - 2 * c_P * P**2 * G  - d_P * P              # unbound PGRP-LC monomer
+    dbP = c_P * P**2 * G  - d_bP * bP                     # PGRP-LC dimer bound to pathogen
+   
+    dbI = c_I * (tot_I-bI/K_I) * bP - d_bI * bI                  # IMD recruited by activated PGRP-LC
+   
+    dRB = s_B - c_B * RB * bI - d_R * RB                 # Relish B in cytoplasm
+    dRP = c_B * RB * bI - f_P * RP - d_R * RP            # Relish P in cytoplasm
+   
+    dRN = f_P * RP - c_N * RN + c_bN * bRN - d_N * RN    # free nuclear Relish
+    dbRN = c_N * RN - c_bN * bRN - d_bN * bRN           # nuclear Relish bound to target gene
+    
+    return dA, dG, dP, dbP, dbI, dRB, dRP, dRN, dbRN;
+
+t_span = np.array([0, 50])
+times = np.linspace(t_span[0], t_span[1], 101)
+
+# Initial conditions of ODE system
+y0 = [init_vals, init_vals, init_vals, 0, 0, init_vals, 0, 0, 0]
+
+# definition of the system of ODEs
+#def iron(XYZ,t,a12,a21,a23,a32,b13,b31,I):
+#  X1,X2,X3=XYZ
+#  dX1=-a12*(X1)+a21*(X2)-b13*(X1)+b31*(X3)
+#  dX2=-a23*(X2)-a21*(X2)+a12*(X1)+a32*(X3)
+#  dX3=-a32*(X3)-b31*(X3)+a23*(X2)+b13*(X1)-I
+#  return dX1,dX2,dX3;
+
+# default parameter values
+#a12=0.0005 
+#a21=0.00001
+#a23=0.0003 
+#a32=0.0002 
+#b13=0.0001 
+#b31=0.000001 
+#I=0.001 
+
+# initial condition
+#XYZ0=[1000.,30.,10.]
+#X10=1000.
+#X20=50.
+#X30=30.
+
+# tmie steps
+#t=np.linspace(0,100,1000) #(start,stop,num samples to generate)
+
+# example single calculation
+y = sp.odeint(f,y0,times,args=(d_A,s_A,c_A,c_N,c_bN,f_P))
+
+### Sobol analysis ###
+# defining problem
+# can add the 'I' parameter
+# assumed that range for each parameter is 80-120% of value assumed above
+# can be changed
+problem = {
+  'num_vars': 6, #a's, b's and initial condition
+  'names': ['d_A', 's_A','c_A','c_N','c_bN','f_P'],
+  'bounds':  np.column_stack((np.array([1.89,1e-18,77.7,0.14,4.85,7.6]),np.array([7.05,2e-9,94.4,0.59,5.08,12.2])))
+}
+
+# Generate samples
+vals = saltelli.sample(problem, 2**4)
+
+#%%
+
+# initializing matrix to store output
+output = np.zeros([len(vals),9])
+
+# Run model (example)
+# numerically soves the ODE
+# output is X1, X2, and X3 at the end time step
+# could save output for all time steps if desired, but requires more memory
+#Y = np.zeros([len(vals),1])
+
+for i in range(len(vals)):
+  output[i][:] = sp.odeint(f,y0,times,args=(vals[i][0],vals[i][1],vals[i][2],vals[i][3],vals[i][4],vals[i][5]))[len(y)-1]
 
 
+# completing soboal analysis for each X1, X2, and X3
+#print('\n\n====X1 Sobol output====\n\n')
 
+#sobol_indices = sobol.analyze(problem, output[:,0], print_to_console=True)
 
+#sobol_indices.plot()
 
+#total, first, second = sobol_indices.to_df()
 
+#S1s = np.array([first['S1']])
 
+#%%
+
+from SALib import ProblemSpec
+
+output = np.array([f(y0, times, *params) for params in vals])
+
+sobol_indices = [sobol.analyze(problem, output[:,0], Y) for Y in output[:,0].T ]
+
+sobol_indices.heatmap()
+
+S1s = np.array([s['S1'] for s in sobol_indices])
+
+fig = plt.figure(figsize=(20, 12), constrained_layout=True)
+gs = fig.add_gridspec(4, 4)
+
+ax0 = fig.add_subplot(gs[0, 0])
+ax1 = fig.add_subplot(gs[0, 1])
+ax2 = fig.add_subplot(gs[1, 1])
+ax3 = fig.add_subplot(gs[2, 0])
+ax4 = fig.add_subplot(gs[2, 1])
+ax5 = fig.add_subplot(gs[3, 0])
+ax6 = fig.add_subplot(gs[3, 1])
+
+for i, ax in enumerate([ax1, ax2, ax3, ax4, ax5, ax6]):
+    ax.plot(times, S1s[:, i],
+            label=r'S1$_\mathregular{{{}}}$'.format(problem["names"][i]),
+            color='black')
+    ax.set_xlabel("t")
+    ax.set_ylabel("First-order Sobol index")
+
+    ax.set_ylim(0, 101)
+
+    ax.yaxis.set_label_position("right")
+    ax.yaxis.tick_right()
+
+    ax.legend(loc='upper right')
+
+ax0.plot(times, np.mean(y, axis=0), label="Mean", color='black')
+
+# in percent
+prediction_interval = 95
+
+ax0.fill_between(times,
+                 np.percentile(y, 50 - prediction_interval/2., axis=0),
+                 np.percentile(y, 50 + prediction_interval/2., axis=0),
+                 alpha=0.5, color='black',
+                 label=f"{prediction_interval} % prediction interval")
+
+ax0.set_xlabel("t")
+ax0.set_ylabel("Def3")
+ax0.legend(title=r"$y=a+b\cdot x^2$",
+           loc='upper center')._legend_box.align = "left"
+
+plt.show()
 
 
 
